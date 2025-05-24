@@ -15,15 +15,15 @@
     <h1>Sam-reason-S3 Model Demo</h1>
     <form method="post">
         <label for="prompt">Prompt:</label><br>
-        <textarea id="prompt" name="prompt" rows="4" required>{{ prompt if prompt is defined else "" }}</textarea><br>
+        <textarea id="prompt" name="prompt" rows="4" required>{{prompt}}</textarea><br>
         <label for="max_new_tokens">Max New Tokens:</label><br>
-        <input id="max_new_tokens" name="max_new_tokens" type="number" value="{{ max_new_tokens if max_new_tokens is defined else 50 }}" min="1" max="512"><br>
+        <input id="max_new_tokens" name="max_new_tokens" type="number" value="{{max_new_tokens}}" min="1" max="512"><br>
         <button type="submit">Generate</button>
     </form>
     {% if result %}
     <div class="result">
         <strong>Generated Text:</strong>
-        <pre>{{ result }}</pre>
+        <pre>{{result}}</pre>
     </div>
     {% endif %}
 </body>
