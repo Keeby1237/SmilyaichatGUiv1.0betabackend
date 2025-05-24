@@ -1,1 +1,30 @@
-
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sam-reason-S3 Inference GUI</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2em auto; max-width: 600px; background: #fafaff; }
+        h1 { color: #364fc7; }
+        form { margin-bottom: 2em; }
+        label { font-weight: bold; }
+        textarea, input[type="number"] { width: 100%; margin-bottom: 1em; }
+        .result { background: #f1f3f5; padding: 1em; border-radius: 6px; margin-top: 1em; }
+    </style>
+</head>
+<body>
+    <h1>Sam-reason-S3 Model Demo</h1>
+    <form method="post">
+        <label for="prompt">Prompt:</label><br>
+        <textarea id="prompt" name="prompt" rows="4" required>{{ prompt if prompt is defined else "" }}</textarea><br>
+        <label for="max_new_tokens">Max New Tokens:</label><br>
+        <input id="max_new_tokens" name="max_new_tokens" type="number" value="{{ max_new_tokens if max_new_tokens is defined else 50 }}" min="1" max="512"><br>
+        <button type="submit">Generate</button>
+    </form>
+    {% if result %}
+    <div class="result">
+        <strong>Generated Text:</strong>
+        <pre>{{ result }}</pre>
+    </div>
+    {% endif %}
+</body>
+</html>
