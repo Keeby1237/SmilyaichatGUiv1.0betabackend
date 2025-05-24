@@ -1,36 +1,48 @@
-from fastapi import FastAPI, Request, Form
-from fastapi.responses import FileResponse, HTMLResponse
-from pydantic import BaseModel
+from flask import Flask, request, render_template_string, send_file, jsonify
 from transformers import pipeline
 
+app = Flask(__name__)
+
+# Load Hugging Face model
 model_id = "Smilyai-labs/Sam-reason-S3"
 pipe = pipeline("text-generation", model=model_id)
 
-app = FastAPI(title="Sam-reason-S3 Inference API")
-
-class InferRequest(BaseModel):
-    prompt: str
-    max_new_tokens: int = 50
-
-@app.get("/", response_class=HTMLResponse)
-def get_home():
-    # Serve index.html from the root directory
-    return FileResponse("index.html", media_type="text/html")
-
-@app.post("/", response_class=HTMLResponse)
-async def generate_form(request: Request):
-    form = await request.form()
-    prompt = form.get("prompt", "")
-    max_new_tokens = int(form.get("max_new_tokens", 50))
-    result = pipe(prompt, max_new_tokens=max_new_tokens)
-    generated = result[0]['generated_text']
-    # Read the HTML, inject the result (very basic template replacement)
+def read_html(replace=None):
     with open("index.html", encoding="utf-8") as f:
         html = f.read()
-    html = html.replace("{{result}}", generated).replace("{{prompt}}", prompt).replace("{{max_new_tokens}}", str(max_new_tokens))
-    return HTMLResponse(content=html)
+    if replace:
+        for k, v in replace.items():
+            html = html.replace("{{" + k + "}}", v)
+    return html
 
-@app.post("/generate")
-def generate(req: InferRequest):
-    result = pipe(req.prompt, max_new_tokens=req.max_new_tokens)
-    return {"result": result}
+@app.route("/", methods=["GET", "POST"])
+def home():
+    if request.method == "POST":
+        prompt = request.form.get("prompt", "")
+        max_new_tokens = int(request.form.get("max_new_tokens", 50))
+        result = pipe(prompt, max_new_tokens=max_new_tokens)
+        formatted = result[0]["generated_text"]
+        html = read_html({
+            "prompt": prompt,
+            "max_new_tokens": str(max_new_tokens),
+            "result": formatted
+        })
+        return render_template_string(html)
+    # GET
+    html = read_html({
+        "prompt": "",
+        "max_new_tokens": "50",
+        "result": ""
+    })
+    return render_template_string(html)
+
+@app.route("/generate", methods=["POST"])
+def generate():
+    data = request.get_json(force=True)
+    prompt = data.get("prompt", "")
+    max_new_tokens = int(data.get("max_new_tokens", 50))
+    result = pipe(prompt, max_new_tokens=max_new_tokens)
+    return jsonify({"result": result})
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=10000)
