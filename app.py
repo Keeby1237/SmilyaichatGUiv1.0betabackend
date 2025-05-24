@@ -17,12 +17,21 @@ class InferRequest(BaseModel):
 
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request, "result": None})
+    # Show the template at the home route
+    return templates.TemplateResponse("index.html", {"request": request, "result": None, "prompt": "", "max_new_tokens": 50})
 
 @app.post("/", response_class=HTMLResponse)
 def generate_form(request: Request, prompt: str = Form(...), max_new_tokens: int = Form(50)):
     result = pipe(prompt, max_new_tokens=max_new_tokens)
-    return templates.TemplateResponse("index.html", {"request": request, "result": result[0]['generated_text'], "prompt": prompt, "max_new_tokens": max_new_tokens})
+    return templates.TemplateResponse(
+        "index.html",
+        {
+            "request": request,
+            "result": result[0]["generated_text"],
+            "prompt": prompt,
+            "max_new_tokens": max_new_tokens,
+        },
+    )
 
 @app.post("/generate")
 def generate(req: InferRequest):
